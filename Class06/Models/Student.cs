@@ -11,6 +11,7 @@ public partial class Student
 {
     [Key]
     [Column("number")]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)] //para não ser identity
     public int Number { get; set; }
 
     [Column("name")]
