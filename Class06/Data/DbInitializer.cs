@@ -12,44 +12,39 @@ namespace Class06.Data
         {
             _context.Database.EnsureCreated();
 
-            // Look for any categories.
+            // Look for any student.
             if (_context.Students.Any())
             {
                 return;   // DB has been seeded
             }
 
-            Dictionary<string, List<Student>> collection = new Dictionary<string, List<Student>>();
+          
+            var classes = new List<Class>();
+            var students = new List<Student>();
 
             using (StreamReader sr = File.OpenText("Data\\StudentsList_Class06.txt"))
             {
                 string line;
                 while ((line = sr.ReadLine()) != null)
                 {
-                    string[] parts = line.Split(";"); // splits the information "number;name;class"
 
-                    if (collection.ContainsKey(parts[2]) == false) // creates a Dictionary with course as Key...
-                        collection.Add(parts[2], new List<Student>());
-                    // ... and list of students as Value
-                    collection[parts[2]].Add(new Student { Number = Convert.ToInt32(parts[0]), Name = parts[1] });
-                }
+                    string[] parts = line.Split(";");
 
-                foreach (string _class in collection.Keys) // create Classes in Database
-                {
-                    _context.Classes.Add(new Class { Name = _class });
-                }
-                _context.SaveChanges();
-
-                foreach (KeyValuePair<string, List<Student>> aux in collection) // create Students in Database
-                {
-                    foreach (Student s in aux.Value)
+                    if (!classes.Any(x => x.Name.Equals(parts[2])))
                     {
-                        s.ClassId = _context.Classes.Single(classes => classes.Name == aux.Key).Id;
-                        _context.Students.Add(s);
+                        classes.Add(new Class { Name = parts[2] });
                     }
+                    students.Add(new Student
+                    {
+                        Number = Int32.Parse(parts[0]),
+                        Name = parts[1],
+                        Class = classes.SingleOrDefault(x => x.Name == parts[2])
+                    });
                 }
+                _context.Classes.AddRange(classes);
+                _context.Students.AddRange(students);
                 _context.SaveChanges();
             }
-
 
         }
     }
